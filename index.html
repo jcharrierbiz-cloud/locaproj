@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>locaproj — le ciné entre potes, à 2 €</title>
+  <meta name="description" content="Réserve le vidéoprojecteur locaproj : location à la journée dès 1,50 €, ou séance ciné et PS4 à 0,50 € par personne. Remise au Roc, retour le lendemain matin.">
+  <meta property="og:title" content="locaproj — le ciné entre potes, à 2 €">
+  <meta property="og:description" content="Un vidéoprojecteur pour regarder films, matchs et séries à plusieurs. Réserve en 1 minute.">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="theme-color" content="#c8102e">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Bungee&display=swap">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<!--
+THESIS: la réservation est une commande au comptoir confiserie du ciné ; on refuse la page « streaming noir + néon » et l'agenda blanc façon Calendly.
+OWN-WORLD: auvent rayé rouge popcorn / blanc à festons, tableau-menu rétroéclairé brun nuit, prix et enseignes en Bungee jaune beurre, ticket de caisse papier blanc à bord dentelé, Bricolage Grotesque pour tout le reste.
+STORY: le lycéen comprend « vidéoprojecteur à 2 € », choisit sur place ou à emporter, prend son heure, reçoit son numéro de commande.
+FIRST VIEWPORT: auvent + enseigne locaproj ; titre géant ; prix 2 € en jaune ; bouton Réserver ; début du tableau-menu visible.
+FORM: comptoir confiserie, 5e de ma liste ; seed 1e631609.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+-->
+  <p class="demo" id="bandeau-demo" hidden>Mode démo : séances et réservations fictives, rien n'est enregistré.</p>
+
+  <header class="auvent">
+    <div class="auvent__enseigne">
+      <a class="logo" href="./" aria-label="locaproj, accueil">locaproj</a>
+      <a class="insta" href="https://www.instagram.com/locaproj.roc/" rel="noopener" target="_blank">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="1.1" class="plein"/></svg>
+        <span>@locaproj.roc</span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <section class="accroche" aria-labelledby="titre">
+      <h1 id="titre">Le ciné entre potes.</h1>
+      <p class="accroche__texte">Un vidéoprojecteur pour regarder films, matchs et séries à plusieurs, sur un vrai grand écran. Pas chacun dans son coin sur son téléphone.</p>
+      <div class="prix-geant">
+        <p class="prix-geant__montant"><span id="prix-jour">2 €</span></p>
+        <p class="prix-geant__legende">la journée avec le projecteur<br><span id="prix-interne">1,50 €</span> pour les internes</p>
+      </div>
+      <p class="accroche__compare">Ailleurs, en louer un coûte <strong>5 à 10 € la journée</strong>.</p>
+      <a class="bouton bouton--beurre" href="#carte">Réserver
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+      </a>
+    </section>
+
+    <section class="tableau" id="carte" aria-labelledby="titre-carte">
+      <h2 id="titre-carte">Sur place ou à emporter&nbsp;?</h2>
+      <div class="tableau__erreur" id="erreur-chargement" hidden>
+        <p>Impossible de charger les disponibilités pour le moment.</p>
+        <button type="button" class="bouton bouton--petit" id="reessayer">Réessayer</button>
+      </div>
+      <fieldset class="rayon" id="rayon-emporter">
+        <legend><span class="rayon__nom">À emporter</span><span class="rayon__sous">Tu prends le projecteur, remise au Roc</span></legend>
+        <div class="rayon__articles" data-type="location"></div>
+      </fieldset>
+      <fieldset class="rayon" id="rayon-surplace">
+        <legend><span class="rayon__nom">Sur place</span><span class="rayon__sous">Séance dans notre chambre, quand on en organise une</span></legend>
+        <div class="rayon__articles" data-type="seance"></div>
+      </fieldset>
+    </section>
+
+    <section class="etape" id="quand" aria-labelledby="titre-quand" hidden>
+      <h2 id="titre-quand">Quand&nbsp;?</h2>
+      <div class="quand__duree" id="bloc-duree" hidden>
+        <p class="etiquette" id="label-duree">Combien de jours&nbsp;?</p>
+        <div class="compteur" role="group" aria-labelledby="label-duree">
+          <button type="button" class="compteur__btn" data-pas="-1" data-cible="jours" aria-label="Un jour de moins">−</button>
+          <output class="compteur__valeur" id="valeur-jours" aria-live="polite">3 jours</output>
+          <button type="button" class="compteur__btn" data-pas="1" data-cible="jours" aria-label="Un jour de plus">+</button>
+        </div>
+      </div>
+      <div id="bloc-location" hidden>
+        <fieldset class="jours">
+          <legend class="etiquette">Jour de remise</legend>
+          <div class="jours__liste" id="liste-jours"></div>
+        </fieldset>
+        <fieldset class="heures">
+          <legend class="etiquette">Heure de remise, au Roc</legend>
+          <div class="heures__liste" id="liste-heures"></div>
+        </fieldset>
+        <p class="retour" id="texte-retour" hidden></p>
+      </div>
+      <div id="bloc-seance" hidden>
+        <fieldset class="seances">
+          <legend class="etiquette">Choisis ta séance</legend>
+          <div class="seances__liste" id="liste-seances"></div>
+        </fieldset>
+        <div class="quand__personnes" id="bloc-personnes" hidden>
+          <p class="etiquette" id="label-personnes">Vous serez combien&nbsp;?</p>
+          <div class="compteur" role="group" aria-labelledby="label-personnes">
+            <button type="button" class="compteur__btn" data-pas="-1" data-cible="personnes" aria-label="Une personne de moins">−</button>
+            <output class="compteur__valeur" id="valeur-personnes" aria-live="polite">1 personne</output>
+            <button type="button" class="compteur__btn" data-pas="1" data-cible="personnes" aria-label="Une personne de plus">+</button>
+          </div>
+        </div>
+      </div>
+      <p class="vide" id="quand-vide" hidden></p>
+      <p class="alerte" id="quand-alerte" role="alert" hidden></p>
+    </section>
+
+    <section class="etape" id="qui" aria-labelledby="titre-qui" hidden>
+      <h2 id="titre-qui">C'est pour qui&nbsp;?</h2>
+      <form class="bon" id="formulaire" novalidate>
+        <div class="bon__ligne bon__ligne--deux">
+          <label class="champ">
+            <span class="champ__label">Prénom</span>
+            <input name="prenom" autocomplete="given-name" required maxlength="40">
+          </label>
+          <label class="champ">
+            <span class="champ__label">Nom</span>
+            <input name="nom" autocomplete="family-name" required maxlength="40">
+          </label>
+        </div>
+        <div class="bon__ligne bon__ligne--deux">
+          <label class="champ">
+            <span class="champ__label">Ton Instagram</span>
+            <span class="champ__prefixe"><span aria-hidden="true">@</span><input name="instagram" required maxlength="31" autocapitalize="none" autocomplete="off" spellcheck="false" pattern="@?[A-Za-z0-9._]{1,30}" aria-describedby="aide-insta"></span>
+            <span class="champ__aide" id="aide-insta">On t'écrit là pour fixer l'endroit exact.</span>
+          </label>
+          <label class="champ">
+            <span class="champ__label">Classe</span>
+            <input name="classe" required maxlength="20" placeholder="ex. 1re G3">
+          </label>
+        </div>
+        <label class="case">
+          <input type="checkbox" name="interne">
+          <span>Je suis interne <span class="case__aide" id="aide-interne"></span></span>
+        </label>
+        <div class="bon__ligne bon__ligne--deux">
+          <label class="champ">
+            <span class="champ__label">Téléphone <span class="facultatif">facultatif</span></span>
+            <input name="telephone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20">
+          </label>
+          <label class="champ">
+            <span class="champ__label">E-mail <span class="facultatif">facultatif</span></span>
+            <input name="email" type="email" autocomplete="email" maxlength="100" aria-describedby="aide-email">
+            <span class="champ__aide" id="aide-email">Pour recevoir ta confirmation.</span>
+          </label>
+        </div>
+        <label class="champ">
+          <span class="champ__label">Un message <span class="facultatif">facultatif</span></span>
+          <textarea name="message" rows="2" maxlength="300" placeholder="Un endroit précis au Roc, une question…"></textarea>
+        </label>
+        <label class="case case--engagement" id="bloc-engagement">
+          <input type="checkbox" name="engagement">
+          <span>Si le projecteur est cassé pendant ma location, je le rembourse.</span>
+        </label>
+        <div class="piege" aria-hidden="true">
+          <label>Site web <input name="site" tabindex="-1" autocomplete="off"></label>
+        </div>
+
+        <div class="ticket" id="ticket" aria-live="polite">
+          <p class="ticket__tete">locaproj · ta commande</p>
+          <dl class="ticket__lignes" id="ticket-lignes"></dl>
+          <p class="ticket__total"><span>Total</span><span id="ticket-total">—</span></p>
+          <p class="ticket__pied">À payer sur place, en espèces ou par carte.</p>
+        </div>
+
+        <p class="alerte" id="envoi-alerte" role="alert" hidden></p>
+        <button class="bouton bouton--beurre bouton--large" type="submit" id="valider">Valider la réservation</button>
+      </form>
+    </section>
+
+    <section class="etape etape--merci" id="merci" aria-labelledby="titre-merci" hidden tabindex="-1">
+      <div class="imprimante">
+        <div class="recu" id="recu">
+          <p class="recu__tete">locaproj</p>
+          <p class="recu__label">Ton numéro</p>
+          <p class="recu__numero" id="recu-numero">LP-0001</p>
+          <h2 id="titre-merci">C'est réservé, <span id="recu-prenom">toi</span>&nbsp;!</h2>
+          <dl class="ticket__lignes" id="recu-lignes"></dl>
+          <p class="ticket__total"><span>À payer sur place</span><span id="recu-total">—</span></p>
+          <p class="recu__mot" id="recu-mot"></p>
+        </div>
+      </div>
+      <div class="merci__actions">
+        <a class="bouton bouton--beurre" href="https://ig.me/m/locaproj.roc" rel="noopener" target="_blank">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="1.1" class="plein"/></svg>
+          Nous écrire sur Insta</a>
+        <button type="button" class="bouton bouton--contour" id="ajouter-agenda">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
+          Ajouter à mon agenda</button>
+        <button type="button" class="bouton bouton--lien" id="nouvelle">Faire une autre réservation</button>
+      </div>
+    </section>
+
+    <section class="infos" aria-labelledby="titre-infos">
+      <h2 id="titre-infos">Bon à savoir</h2>
+      <dl>
+        <div><dt>Remise</dt><dd>Au Roc, le matin avant les cours, à l'heure que tu choisis. On fixe l'endroit exact ensemble sur Instagram. Tu le rends au même endroit, le matin qui suit ta dernière journée, <span class="txt-heures">entre 7h et 8h</span>.</dd></div>
+        <div><dt>Paiement</dt><dd>Sur place, au moment de la remise, en espèces ou par carte. Rien à payer en ligne.</dd></div>
+        <div><dt>Casse</dt><dd>Pas de caution. Mais si le projecteur est cassé pendant ta location, il est à rembourser.</dd></div>
+        <div><dt>Les séances chez nous</dt><dd>Séance ciné : pas besoin de compte, on s'occupe de tout. Séance PS4 : apporte ton jeu. On fournit l'écran géant.</dd></div>
+        <div><dt>Tes infos</dt><dd>On garde juste de quoi organiser ta réservation, rien de plus. Elles sont effacées de notre tableau et de notre agenda 3 mois après.</dd></div>
+      </dl>
+    </section>
+  </main>
+
+  <footer class="pied">
+    <p class="pied__marque">locaproj</p>
+    <p><a href="https://www.instagram.com/locaproj.roc/" rel="noopener" target="_blank">@locaproj.roc</a> · <a href="mailto:Locaproj.85@gmail.com">Locaproj.85@gmail.com</a> · <a href="avis.html">Donner ton avis</a></p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="assets/logic.js"></script>
+  <script src="assets/demo.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

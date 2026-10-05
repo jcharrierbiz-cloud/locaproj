@@ -1,0 +1,8 @@
+node_modules/
+.env
+.playwright-mcp/
+.impeccable/
+*.log
+
+# Contexte produit privé : gardé hors du dépôt public
+PRODUCT.md

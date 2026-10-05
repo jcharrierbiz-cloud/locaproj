@@ -1,0 +1,10 @@
+{
+  "name": "locaproj",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site de réservation du vidéoprojecteur locaproj (location + séances).",
+  "scripts": {
+    "build": "node scripts/build-gs.js",
+    "test": "node scripts/build-gs.js && node --test \"tests/*.test.js\""
+  }
+}

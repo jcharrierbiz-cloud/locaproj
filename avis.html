@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Ton avis — locaproj</title>
+  <meta name="description" content="Dis-nous comment s'est passée ta location ou ta séance locaproj.">
+  <meta name="theme-color" content="#c8102e">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Bungee&display=swap">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <p class="demo" id="bandeau-demo" hidden>Mode démo : ton avis n'est pas enregistré.</p>
+  <header class="auvent">
+    <div class="auvent__enseigne">
+      <a class="logo" href="./" aria-label="locaproj, accueil">locaproj</a>
+      <a class="insta" href="https://www.instagram.com/locaproj.roc/" rel="noopener" target="_blank">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="1.1" class="plein"/></svg>
+        <span>@locaproj.roc</span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <section class="avis" aria-labelledby="titre-avis">
+      <h1 id="titre-avis">Alors, c'était comment&nbsp;?</h1>
+      <p>Trente secondes pour nous aider à faire mieux. Merci d'avoir regardé en grand avec nous.</p>
+
+      <form class="bon" id="form-avis" novalidate>
+        <fieldset class="notes">
+          <legend>Ta note</legend>
+          <label class="note"><input type="radio" name="note" value="1"><span>1</span></label>
+          <label class="note"><input type="radio" name="note" value="2"><span>2</span></label>
+          <label class="note"><input type="radio" name="note" value="3"><span>3</span></label>
+          <label class="note"><input type="radio" name="note" value="4"><span>4</span></label>
+          <label class="note"><input type="radio" name="note" value="5"><span>5</span></label>
+        </fieldset>
+        <label class="champ">
+          <span class="champ__label">Qu'est-ce qui t'a plu&nbsp;?</span>
+          <textarea name="plu" rows="3" maxlength="500"></textarea>
+        </label>
+        <label class="champ">
+          <span class="champ__label">Qu'est-ce qu'on peut améliorer&nbsp;?</span>
+          <textarea name="ameliorer" rows="3" maxlength="500"></textarea>
+        </label>
+        <fieldset class="choix-duo">
+          <legend>Tu reprendrais le projecteur&nbsp;?</legend>
+          <label><input type="radio" name="reviendrait" value="oui"><span>Oui</span></label>
+          <label><input type="radio" name="reviendrait" value="non"><span>Non</span></label>
+        </fieldset>
+        <label class="champ">
+          <span class="champ__label">Ton prénom <span class="facultatif">facultatif</span></span>
+          <input name="prenom" maxlength="40" autocomplete="given-name">
+        </label>
+        <div class="piege" aria-hidden="true">
+          <label>Site web <input name="site" tabindex="-1" autocomplete="off"></label>
+        </div>
+        <p class="alerte" id="avis-alerte" role="alert" hidden></p>
+        <button class="bouton bouton--beurre bouton--large" type="submit" id="envoyer-avis">Envoyer mon avis</button>
+      </form>
+
+      <div class="recu" id="avis-merci" hidden tabindex="-1">
+        <p class="recu__tete">locaproj</p>
+        <h2>Merci&nbsp;!</h2>
+        <p class="recu__mot">On lit chaque avis. À la prochaine séance.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pied">
+    <p class="pied__marque">locaproj</p>
+    <p><a href="./">Réserver le projecteur</a> · <a href="https://www.instagram.com/locaproj.roc/" rel="noopener" target="_blank">@locaproj.roc</a></p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var API = String(window.LOCAPROJ_API || '').trim();
+      var form = document.getElementById('form-avis');
+      var alerte = document.getElementById('avis-alerte');
+      var bouton = document.getElementById('envoyer-avis');
+      if (!API) document.getElementById('bandeau-demo').hidden = false;
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var f = form.elements;
+        var note = form.querySelector('[name=note]:checked');
+        if (!note) {
+          alerte.textContent = 'Choisis une note de 1 à 5.';
+          alerte.hidden = false;
+          form.querySelector('[name=note]').focus();
+          return;
+        }
+        var rev = form.querySelector('[name=reviendrait]:checked');
+        var corps = {
+          action: 'avis', note: Number(note.value), plu: f.plu.value, ameliorer: f.ameliorer.value,
+          reviendrait: rev ? rev.value === 'oui' : null, prenom: f.prenom.value, site: f.site.value
+        };
+        alerte.hidden = true;
+        bouton.disabled = true;
+        bouton.textContent = 'Envoi en cours…';
+        var envoi = API
+          ? fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(corps) }).then(function (r) { return r.json(); })
+          : new Promise(function (ok) { setTimeout(function () { ok({ ok: true }); }, 400); });
+        envoi.then(function (r) {
+          if (!r || !r.ok) throw new Error((r && r.erreur) || 'Erreur');
+          form.hidden = true;
+          var merci = document.getElementById('avis-merci');
+          merci.hidden = false;
+          merci.classList.add('imprime');
+          merci.focus();
+        }).catch(function (err) {
+          alerte.textContent = err && err.message && err.message !== 'Erreur' && err.message !== 'Failed to fetch'
+            ? err.message : 'Envoi impossible. Vérifie ta connexion et réessaie.';
+          alerte.hidden = false;
+        }).finally(function () {
+          bouton.disabled = false;
+          bouton.textContent = 'Envoyer mon avis';
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
